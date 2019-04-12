@@ -1,0 +1,15 @@
+data
+Data
+db_insert_log.txt
+isolated
+log.txt
+output
+output_test
+__pycache__
+queries.txt
+table_header.txt
+temp.txt
+Test
+test.txt
+.vscode
+.ipynb_checkpoints
