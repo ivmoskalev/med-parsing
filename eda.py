@@ -61,18 +61,48 @@ diseas_columns = ['d0', 'd1', 'd10', 'd11', 'd12',
 diagnosis_df = df[diseas_columns]
 
 several_diagnos_df = diagnosis_df[diagnosis_df.sum(1) > 1].astype('int')
+one_diagnos_df = diagnosis_df[diagnosis_df.sum(1) == 1]
 
-for diseas in diseas_columns:
-    d = {1:'_'.join(DISEAS_TITLE_DICT[int(diseas[1:])]), 0:''}
-    several_diagnos_df[diseas] = df[diseas].map(d)
+for column in diseas_columns:
+    d = {1:int(column[1:]) + 1, 0:0}
+    one_diagnos_df[column] = one_diagnos_df[column].map(d)
 
-several_diagnos_df['all_diagnosis'] = several_diagnos_df[diseas_columns].apply(lambda x: re.sub(' +', ' ', ' '.join(x).strip()), axis=1)
+one_diagnos_df['target'] = one_diagnos_df.sum(1).astype('int')
 
 
+""" 
+d5 > d6 > d7 - d12 > d4 > d2
+"""
+several_diagnos_prior = ['d5', 'd6', 'd7', 'd8', 'd9', 'd10', 'd11', 'd12', 'd4', 'd2']
+
+for diagnos in several_diagnos_prior:
+    d5_index = several_diagnos_df[diagnos] == 1
+    several_diagnos_df.loc[d5_index, diseas_columns] = 0
+    several_diagnos_df.loc[d5_index, [diagnos]] = int(diagnos[1:]) + 1
+
+several_diagnos_df['target'] = several_diagnos_df.sum(1).astype('int')
+    
+one_diagnos_df = pd.concat([one_diagnos_df, several_diagnos_df])
+
+df = pd.merge(df, one_diagnos_df['target'], how='left', left_index=True, right_index=True)
+df['id'] = df.index
 p = Path(DATA_PATH).parent
 p = p / 'output'
-csv_path = p / 'several_diagnosis.csv'
-several_diagnos_df['all_diagnosis'].to_csv(csv_path, header=True, sep=' ')
+csv_path = p / 'one_target.csv'
+df.to_csv(csv_path, header=True)
+
+
+# for diseas in diseas_columns:
+#     d = {1:'_'.join(DISEAS_TITLE_DICT[int(diseas[1:])]), 0:''}
+#     several_diagnos_df[diseas] = df[diseas].map(d)
+
+# several_diagnos_df['all_diagnosis'] = several_diagnos_df[diseas_columns].apply(lambda x: re.sub(' +', ' ', ' '.join(x).strip()), axis=1)
+
+
+# p = Path(DATA_PATH).parent
+# p = p / 'output'
+# csv_path = p / 'several_diagnosis.csv'
+# several_diagnos_df['all_diagnosis'].to_csv(csv_path, header=True, sep=' ')
 
 
 # print(get_query_string(DISEAS_DICT[1]))
