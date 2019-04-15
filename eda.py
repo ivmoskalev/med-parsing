@@ -84,7 +84,10 @@ several_diagnos_df['target'] = several_diagnos_df.sum(1).astype('int')
     
 one_diagnos_df = pd.concat([one_diagnos_df, several_diagnos_df])
 
+df = df.drop(diseas_columns, axis=1)
+
 df = pd.merge(df, one_diagnos_df['target'], how='left', left_index=True, right_index=True)
+df['target'].fillna(0)
 df['id'] = df.index
 p = Path(DATA_PATH).parent
 p = p / 'output'
